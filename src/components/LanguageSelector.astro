@@ -1,0 +1,88 @@
+---
+import { languages } from '../i18n/ui';
+
+const currentPath = Astro.url.pathname;
+const currentLang = currentPath.startsWith('/en') ? 'en' : 'it';
+
+// Function to get the correct path for language switching
+function getLanguagePath(path: string, targetLang: string) {
+  // Remove trailing slash if present
+  path = path.replace(/\/$/, '');
+  
+  // If current path is root, handle specially
+  if (path === '' || path === '/') {
+    return targetLang === 'it' ? '/' : '/en/';
+  }
+  
+  // If switching to Italian from English path
+  if (currentLang === 'en' && targetLang === 'it') {
+    if (path.startsWith('/en')) {
+      return path.replace(/^\/en/, '') || '/';
+    }
+    return path;
+  }
+  
+  // If switching to English from Italian path
+  if (currentLang === 'it' && targetLang === 'en') {
+    if (!path.startsWith('/en')) {
+      return `/en${path}`;
+    }
+    return path;
+  }
+  
+  return path;
+}
+---
+
+<div class="language-selector">
+  {Object.entries(languages).map(([lang, label]) => {
+    const path = getLanguagePath(currentPath, lang);
+    return (
+      <a 
+        href={path} 
+        class={`lang-link ${currentLang === lang ? 'active' : ''}`}
+      >
+        {label}
+      </a>
+    );
+  })}
+</div>
+
+<style>
+  .language-selector {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .lang-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+  
+  .lang-link:hover {
+    background-color: var(--light-bg);
+    color: var(--accent-color);
+  }
+  
+  .lang-link.active {
+    background-color: var(--primary-color);
+    color: white;
+  }
+  
+  .lang-link.active:hover {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  @media (max-width: 768px) {
+    .language-selector {
+      margin-top: 1rem;
+      justify-content: center;
+    }
+  }
+</style>
